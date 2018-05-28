@@ -14,23 +14,27 @@ import android.widget.TextView;
 public class RotaryKnob {
     private final float KNOB_WIDTH = 500;
     private final float KNOB_HEIGTH = 500;
+    private final int MIN_BPM = 10;
+    private final int MAX_BPM = 300;
     private Context context;
     private ImageView knobImageView;
     private Matrix matrix;
-    private float degrees = 0;
     private TextView debugTextView;
+    private TextView bpmTextView;
     private SoundPool rotateClickPlayer;
     private int rotateClickId;
     private int bpm = 10;
+    ClickPlayerTask clickPlayerTask;
 
-    RotaryKnob(Context context, ImageView knobImageView) {
+    RotaryKnob(Context context) {
         this.context = context;
-        this.knobImageView = knobImageView;
+        this.knobImageView = ((MainActivity)context).findViewById(R.id.knobImageView);
+        this.bpmTextView = ((MainActivity)context).findViewById(R.id.bpmTextView);
         matrix = new Matrix();
 
         setKnobImage();
 
-        debugTextView = ((MainActivity)context).findViewById(R.id.textview);
+        debugTextView = ((MainActivity)context).findViewById(R.id.debugTextView);
 
         rotateClickPlayer = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
         rotateClickId = rotateClickPlayer.load(context, R.raw.click, 1);
@@ -83,22 +87,23 @@ public class RotaryKnob {
                                     ((float) knobImageView.getHeight());
                     newDegrees = cartesianToPolar(x, y);
                     //bpm увеличивается каждые 10 градусов. 10 градусов - это наш шаг
-                    int step = (int)(currentDegrees/10) - (int)(newDegrees/10);
+                    int step = (int)(newDegrees/10) - (int)(currentDegrees/10);
                     if (Math.abs(step) >= 1) {
                         //Если шаг слишком большой (например, при переходе от 0 к 360), то уменьшаем его
                         if(Math.abs(step) >= 30) step = -((step>0?1:-1) * 36 - step);
-                        //TODO: сделать нормальную блокировку поворота при маленьком bpm
-                        if(bpm+step < 10) { debugTextView.setText(String.valueOf(currentDegrees) + "\n" + newDegrees + "\nstartDegrees = " + startDegrees + "\nstep = " + step);
-                            return false;}
-                        bpm+=step;
 
+                        if(bpm+step >= MIN_BPM && bpm+step <= MAX_BPM) {
+                            bpm += step;
+                            if(clickPlayerTask != null) {
+                                clickPlayerTask.setBPM(bpm);
+                            }
+                        }
 
-                        rotateClickPlayer.play(rotateClickId, 1, 1, 0, 0, 1);
+                        rotateClickPlayer.play(rotateClickId, 0.75f, 0.75f, 0, 0, 1);
                     }
-                    debugTextView.setText(String.valueOf(currentDegrees) + "\n" + newDegrees + "\nbpm = " + bpm + "\nstartDegrees = " + startDegrees + "\nstep = " + step);
+                    bpmTextView.setText("BPM:\n" + bpm);
                     currentDegrees = newDegrees;
                     turn(currentDegrees -startDegrees);
-                    setDegrees(currentDegrees);
                     break;
                 case MotionEvent.ACTION_UP:
                     startDegrees = currentDegrees - startDegrees;
@@ -109,6 +114,18 @@ public class RotaryKnob {
             return true;
         }
     };
+
+    public void setBpm(int bpm) {
+        this.bpm = bpm;
+    }
+
+    public int getBpm() {
+        return bpm;
+    }
+
+    public void setPlayerTask(ClickPlayerTask task) {
+        this.clickPlayerTask = task;
+    }
 
     public void setMatrix(Matrix matrix) {
         this.matrix = matrix;
@@ -122,16 +139,8 @@ public class RotaryKnob {
         this.knobImageView = knobImageView;
     }
 
-    public void setDegrees(float degrees) {
-        this.degrees = degrees;
-    }
-
     public ImageView getKnobImageView() {
 
         return knobImageView;
-    }
-
-    public float getDegrees() {
-        return degrees;
     }
 }

@@ -7,10 +7,10 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/textview"
+        android:id="@+id/debugTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:text=""
         android:layout_gravity="bottom|center_horizontal"/>
 
     <ImageView
@@ -20,6 +20,33 @@
         android:layout_gravity="center_vertical|center_horizontal"
         android:contentDescription="RotaryKnob"
         />
+
+    <Button
+        android:id="@+id/playButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:text="Play" />
+
+    <TextView
+        android:id="@+id/bpmTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BPM:\n10"
+        app:layout_anchor="@id/knobImageView"
+        app:layout_anchorGravity="right|center_vertical"
+        android:layout_gravity="center_vertical|end"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="24sp"/>
+
+    <SeekBar
+        android:id="@+id/volumebar"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_anchor="@id/playButton"
+        app:layout_anchorGravity="bottom|center_horizontal"
+        android:layout_gravity="bottom|center_horizontal"/>
 
 
 </android.support.design.widget.CoordinatorLayout>
